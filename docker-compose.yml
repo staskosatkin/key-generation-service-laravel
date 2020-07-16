@@ -1,0 +1,70 @@
+version: '3'
+services:
+  api:
+    image: kgs-api
+    container_name: api
+    build:
+      context: .
+      dockerfile: docker/api.dockerfile
+    volumes:
+      - .:/var/www
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      XDEBUG_CONFIG: "remote_host=docker.for.mac.localhost remote_enable=1"
+      PHP_IDE_CONFIG: "serverName=Docker"
+    env_file:
+      - .env
+    working_dir: /var/www
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - data-redis:/data
+  postgres:
+    container_name: postgres
+    image: postgres:12.3
+    ports:
+      - 5432:5432
+    volumes:
+      - data-postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: urlshortener
+      POSTGRES_PASSWORD: urlshortener
+      POSTGRES_DB: urlshortener
+  web:
+    container_name: web
+    build:
+      context: .
+      dockerfile: docker/web.dockerfile
+    working_dir: /var/www
+    depends_on:
+      - api
+    volumes:
+      - .:/var/www
+    ports:
+      - 8081:80
+  worker:
+    image: kgs-worker
+    build:
+      context: .
+      dockerfile: docker/worker.dockerfile
+    container_name: worker
+    working_dir: /var/www
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/var/www
+    env_file:
+      - .env
+
+volumes:
+  data-redis:
+    driver: "local"
+  data-postgres:
+    driver: "local"
+
