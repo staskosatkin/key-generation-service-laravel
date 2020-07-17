@@ -2,6 +2,11 @@
 
 namespace App\Console;
 
+use App\Console\Commands\CreateHash;
+use App\Console\Commands\DeliverHash;
+use App\Console\Commands\FetchHash;
+use App\Console\Commands\GenerateHash;
+use App\Console\Commands\ReturnHash;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -13,7 +18,11 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        CreateHash::class,
+        FetchHash::class,
+        ReturnHash::class,
+        GenerateHash::class,
+        DeliverHash::class,
     ];
 
     /**
