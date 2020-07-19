@@ -7,8 +7,12 @@ use App\Console\Commands\DeliverHash;
 use App\Console\Commands\FetchHash;
 use App\Console\Commands\GenerateHash;
 use App\Console\Commands\ReturnHash;
+use App\Jobs\GenerateHashJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Redis\RedisManager;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -33,7 +37,27 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+         $schedule->call(function () {
+             Log::debug("Run schedule task every minute");
+         })->everyMinute();
+
+         $schedule->call(function () {
+             /** @var RedisManager $redis */
+             $redis = app(RedisManager::class);
+
+             if ($redis->client()->lLen('hash-queue') < 120000) {
+                 Log::debug("Run hash deliver");
+                 Artisan::call('hash:deliver', [
+                     '--amount' => 100,
+                     '--iterations' => 120,
+                 ]);
+             }
+         })->everyFiveMinutes();
+
+         $schedule->call(function () {
+             Log::debug("Dispatch new generation Job");
+             dispatch(new GenerateHashJob(1000));
+         })->everyMinute();
     }
 
     /**

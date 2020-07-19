@@ -35,11 +35,15 @@ class KeyManager implements KeysManagerInterface
 
     public function createHash(string $hash): bool
     {
-        UsedKey::where('hash', $hash)->firstOrFail();
+        if (UsedKey::where('hash', $hash)->first()) {
+            return false;
+        }
 
-        factory(AvailableKey::class)->make([
+        $availableKey = new AvailableKey([
             'hash' => $hash,
-        ])->saveOrFail();
+        ]);
+
+        $availableKey->saveOrFail();
 
         return true;
     }

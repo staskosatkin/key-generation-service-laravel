@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 class DeliverHash extends Command
 {
-    protected $signature = 'hash:deliver';
+    protected $signature = 'hash:deliver {--amount=} {--iterations=}';
 
     protected $description = 'Deliver stream of hashes';
 
@@ -27,8 +27,15 @@ class DeliverHash extends Command
 
     public function handle()
     {
-        $amount = $this->ask('Amount', 100);
-        $iterations = $this->ask('Iterations', 1);
+        $amount = (int) $this->option('amount');
+        if (!$amount) {
+            $amount = (int) $this->ask('Amount', 100);
+        }
+
+        $iterations = (int) $this->option('iterations');
+        if (!$iterations) {
+            $iterations = (int) $this->ask('Iterations', 1);
+        }
 
         // dispatch Job
         Collection::times($iterations, function () use ($amount) {

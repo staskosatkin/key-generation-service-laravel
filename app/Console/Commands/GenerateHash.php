@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 class GenerateHash extends Command
 {
-    protected $signature = 'hash:generate';
+    protected $signature = 'hash:generate {--amount=} {--iterations=}';
 
     protected $description = 'Create new Random Hash';
 
@@ -32,17 +32,18 @@ class GenerateHash extends Command
 
     public function handle()
     {
-        $amount = (int) $this->ask('Amount', 10);
-
-        $iterations = (int) $this->ask('Iterations', 1);
-        $multiplication = 1;
-        if ($iterations > 1) {
-            $multiplication = $this->ask('Multiplication', 1);
+        $amount = (int) $this->option('amount');
+        if (!$amount) {
+            $amount = (int) $this->ask('Amount', 100);
         }
 
-        Collection::times($iterations, function ($index) use ($multiplication, $amount) {
-            $totalAmount = $amount * (1 + $index * ($multiplication - 1));
-            $this->dispatcher->dispatch((new GenerateHashJob($totalAmount))->onQueue('generating'));
+        $iterations = (int) $this->option('iterations');
+        if (!$iterations) {
+            $iterations = (int) $this->ask('Iterations', 1);
+        }
+
+        Collection::times($iterations, function () use ($amount) {
+            $this->dispatcher->dispatch((new GenerateHashJob($amount))->onQueue('generating'));
         });
 
         $this->info('Process is queued');

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class CreateHash extends Command
 {
-    protected $signature = 'hash:create';
+    protected $signature = 'hash:create {--hash=}';
 
     protected $description = 'Create new Available Hash';
 
@@ -26,7 +26,11 @@ class CreateHash extends Command
 
     public function handle()
     {
-        $hash = $this->ask('Enter Hash');
+        $hash = $this->option('hash');
+
+        if (!$hash) {
+            $hash = $this->ask('Enter Hash');
+        }
 
         if ($this->keyManager->createHash($hash)) {
             Log::debug("Hash `$hash` wash created");

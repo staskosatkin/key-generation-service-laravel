@@ -1,22 +1,5 @@
 version: '3'
 services:
-  api:
-    image: kgs-api
-    container_name: api
-    build:
-      context: .
-      dockerfile: docker/api.dockerfile
-    volumes:
-      - .:/var/www
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      XDEBUG_CONFIG: "remote_host=docker.for.mac.localhost remote_enable=1"
-      PHP_IDE_CONFIG: "serverName=Docker"
-    env_file:
-      - .env
-    working_dir: /var/www
   redis:
     container_name: redis
     image: redis:latest
@@ -34,19 +17,15 @@ services:
     environment:
       POSTGRES_USER: urlshortener
       POSTGRES_PASSWORD: urlshortener
-      POSTGRES_DB: urlshortener
-  web:
-    container_name: web
-    build:
-      context: .
-      dockerfile: docker/web.dockerfile
-    working_dir: /var/www
-    depends_on:
-      - api
-    volumes:
-      - .:/var/www
+      POSTGRES_DB: kgs
+  api:
+    container_name: api
+    image: staskosatkin/kgs-api
     ports:
-      - 8081:80
+      - 8082:8080
+    depends_on:
+      - postgres
+      - redis
   worker:
     image: kgs-worker
     build:
@@ -56,6 +35,19 @@ services:
     working_dir: /var/www
     depends_on:
       - postgres
+      - redis
+    volumes:
+      - .:/var/www
+    env_file:
+      - .env
+  scheduler:
+    image: kgs-scheduler
+    build:
+      context: .
+      dockerfile: docker/scheduler.dockerfile
+    container_name: scheduler
+    working_dir: /var/www
+    depends_on:
       - redis
     volumes:
       - .:/var/www

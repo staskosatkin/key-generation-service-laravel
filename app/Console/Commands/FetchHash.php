@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class FetchHash extends Command
 {
-    protected $signature = 'hash:fetch';
+    protected $signature = 'hash:fetch {--amount=}';
 
     protected $description = 'Fetch New Hash';
 
@@ -22,11 +22,12 @@ class FetchHash extends Command
 
     public function handle()
     {
-        Log::emergency("Test message");
+        $amout = $this->option('amount');
+        if (!$amout) {
+            $amout = $this->ask('Bulk size', 1);
+        }
 
-        $bulkSize = $this->ask('Bulk size', 1);
-
-        $hashes = $this->keyManager->fetchHash($bulkSize);
+        $hashes = $this->keyManager->fetchHash($amout);
 
         collect($hashes)->each(fn ($hash) => $this->info($hash));
     }

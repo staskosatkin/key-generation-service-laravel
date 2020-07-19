@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class ReturnHash extends Command
 {
-    protected $signature = 'hash:return';
+    protected $signature = 'hash:return {--hash=}';
 
     protected $description = 'Return Old Hash';
 
@@ -21,7 +21,10 @@ class ReturnHash extends Command
 
     public function handle()
     {
-        $hash = $this->ask("Hash: ");
+        $hash = $this->option('hash');
+        if (!$hash) {
+            $this->ask("Hash: ");
+        }
 
         $this->keyManager->returnHash($hash);
 
