@@ -7,6 +7,7 @@ use App\Console\Commands\DeliverHash;
 use App\Console\Commands\FetchHash;
 use App\Console\Commands\GenerateHash;
 use App\Console\Commands\ReturnHash;
+use App\Jobs\CheckAvailableAmountJob;
 use App\Jobs\GenerateHashJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -52,11 +53,11 @@ class Kernel extends ConsoleKernel
                      '--iterations' => 120,
                  ]);
              }
-         })->everyFiveMinutes();
+         })->everyMinute();
 
          $schedule->call(function () {
              Log::debug("Dispatch new generation Job");
-             dispatch(new GenerateHashJob(1000));
+             dispatch(new CheckAvailableAmountJob(500000));
          })->everyMinute();
     }
 
